@@ -116,6 +116,12 @@ jobs:
           echo "AWS_SECRET_ACCESS_KEY=$(python -c "import json; print(json.load(open('/tmp/aws-creds.json'))['aws_secret_access_key'])")" >> $GITHUB_ENV
           echo "AWS_DEFAULT_REGION=us-east-1" >> $GITHUB_ENV
 
+      - name: Download new metrics for rollback check
+        uses: actions/download-artifact@v4
+        with:
+          name: training-outputs
+          path: .
+
       - name: Bonus 4 - Rollback check vs previous metrics
         run: |
           python - <<'EOF'
@@ -125,15 +131,17 @@ jobs:
           from botocore.exceptions import ClientError
 
           bucket = os.environ["CLOUD_BUCKET"]
-          new_acc = float("${{ needs.train.outputs.accuracy }}")
+          with open("outputs/metrics.json") as f:
+              new_acc = float(json.load(f)["accuracy"])
           key = "models/latest/metrics.json"
           s3 = boto3.client("s3")
 
           try:
               s3.download_file(bucket, key, "/tmp/old_metrics.json")
-              old_acc = json.load(open("/tmp/old_metrics.json"))["accuracy"]
+              old_acc = float(json.load(open("/tmp/old_metrics.json"))["accuracy"])
               print(f"Rollback check: new={new_acc:.4f}, previous={old_acc:.4f}")
-              if new_acc < old_acc:
+              # So sanh lam tron 4 chu so — tranh loi float (0.7539999 vs 0.754)
+              if round(new_acc, 4) < round(old_acc, 4):
                   raise SystemExit(
                       f"FAILED rollback: accuracy moi {new_acc:.4f} < accuracy cu {old_acc:.4f}. Huy deploy."
                   )
@@ -146,12 +154,6 @@ jobs:
           EOF
         env:
           CLOUD_BUCKET: ${{ secrets.CLOUD_BUCKET }}
-
-      - name: Download new metrics for upload after deploy
-        uses: actions/download-artifact@v4
-        with:
-          name: training-outputs
-          path: .
 
       - name: SSH deploy to VM
         uses: appleboy/ssh-action@v1.0.3

@@ -344,6 +344,31 @@ GitHub Actions chỉ cho phép truy cập `outputs` của job **trực tiếp** 
 
 **Sau khi pipeline xanh:** chụp log dòng `Rollback check: new=..., previous=...` → `screenshots/10-bonus-rollback-check.png`
 
+**Run `28149234171` — Rollback vẫn fail sau fix needs:**
+
+| Job | Kết quả |
+|-----|---------|
+| Unit Test | ✅ |
+| Train | ✅ |
+| Eval | ✅ |
+| Deploy | ❌ — step `Bonus 4 - Rollback check` |
+
+**Nguyên nhân 3 — so sánh float thô:**
+
+```
+new_acc = 0.7539999...  (từ job output)
+old_acc = 0.7540        (từ S3 baseline upload tay)
+0.7539999 < 0.754 → FAILED rollback
+```
+
+**Sửa lần 2:**
+
+1. Download artifact **trước** rollback → đọc `new_acc` từ `outputs/metrics.json` (cùng file train tạo)
+2. So sánh `round(new_acc, 4) < round(old_acc, 4)` thay vì so sánh float thô
+3. Đồng bộ lại S3 baseline từ `outputs/metrics.json` local (accuracy = 0.754)
+
+**Commit:** `fix rollback float compare` + retrigger qua `params.yaml`
+
 ---
 
 ## Checklist nộp bài
