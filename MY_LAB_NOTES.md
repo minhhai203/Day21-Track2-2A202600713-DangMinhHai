@@ -304,6 +304,46 @@ df_imb.to_csv("/tmp/imbalanced.csv", index=False)
 5. Tạo `outputs/report.txt` mẫu → copy sang `screenshots/09-bonus-performance-report.txt`
 6. Upload baseline metrics lên S3 cho rollback: `models/latest/metrics.json`
 
+### Phase 6 — Sửa lỗi Deploy job (25/06/2026)
+
+**Run lỗi:** `28149078231` — Unit Test ✅, Train ✅, Eval ✅, **Deploy ❌**
+
+**Nguyên nhân 1 — `needs.train` không khả dụng trong job Deploy:**
+
+```yaml
+# SAI — deploy chỉ needs: eval
+deploy:
+  needs: eval
+  ...
+  new_acc = float("${{ needs.train.outputs.accuracy }}")  # rỗng → ValueError
+
+# ĐÚNG — thêm train vào needs
+deploy:
+  needs: [eval, train]
+```
+
+GitHub Actions chỉ cho phép truy cập `outputs` của job **trực tiếp** trong `needs`. Job `eval` không forward `accuracy` sang `deploy`.
+
+**Nguyên nhân 2 — đường dẫn download artifact:**
+
+```yaml
+# SAI — file nằm ở outputs/outputs/metrics.json
+- uses: actions/download-artifact@v4
+  with:
+    name: training-outputs
+    path: outputs
+
+# ĐÚNG — giữ cấu trúc outputs/metrics.json
+- uses: actions/download-artifact@v4
+  with:
+    name: training-outputs
+    path: .
+```
+
+**Commit sửa:** `9ed6a88` (artifact path) + commit tiếp theo (`needs: [eval, train]`).
+
+**Sau khi pipeline xanh:** chụp log dòng `Rollback check: new=..., previous=...` → `screenshots/10-bonus-rollback-check.png`
+
 ---
 
 ## Checklist nộp bài

@@ -105,7 +105,7 @@ jobs:
 
   deploy:
     name: Deploy
-    needs: eval
+    needs: [eval, train]
     runs-on: ubuntu-latest
     steps:
 
