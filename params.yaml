@@ -1,6 +1,6 @@
 # Sieu tham so tot nhat sau Buoc 1 (accuracy cao nhat tren tap 2998 mau)
 # Voi 5996 mau (Buoc 3), cung bo params dat ~0.754 accuracy
-# GitHub secrets configured - retrigger pipeline
+# GitHub Actions enabled on fork - pipeline retrigger
 n_estimators: 300
 max_depth: null
 min_samples_split: 2
