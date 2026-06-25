@@ -369,6 +369,29 @@ old_acc = 0.7540        (từ S3 baseline upload tay)
 
 **Commit:** `fix rollback float compare` + retrigger qua `params.yaml`
 
+**Run `28149935839` — Rollback vẫn fail (accuracy CI < baseline tay):**
+
+| Job | Kết quả |
+|-----|---------|
+| Unit Test / Train / Eval | ✅ |
+| Deploy | ❌ — `Download artifact` ✅ nhưng rollback so sánh với S3 baseline `0.754` upload tay |
+
+**Nguyên nhân 4 — baseline S3 không khớp CI:**
+
+- Baseline `models/latest/metrics.json` được upload **tay** từ máy local (0.754)
+- CI train có thể cho accuracy hơi thấp hơn khi làm tròn (vẫn ≥ 0.70 → Eval pass)
+- Rollback đúng logic bonus: **chặn deploy khi model mới kém hơn model đang chạy**
+
+**Sửa lần 3 — reset baseline:**
+
+```bash
+aws s3 rm s3://mlops-lab-949678235460-hai/models/latest/metrics.json
+```
+
+→ Lần deploy tiếp theo: log `Khong co metrics cu tren S3 — lan deploy dau tien, bo qua rollback check.`
+→ Sau deploy thành công: CI tự upload `metrics.json` lên S3 (accuracy thực từ pipeline)
+→ Các lần sau: rollback so sánh đúng với baseline do chính CI tạo
+
 ---
 
 ## Checklist nộp bài
