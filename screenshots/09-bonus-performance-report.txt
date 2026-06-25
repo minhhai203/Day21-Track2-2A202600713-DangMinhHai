@@ -1,0 +1,18 @@
+=== Performance Report ===
+
+Confusion Matrix (rows=true, cols=pred):
+       pred_0  pred_1  pred_2
+true_0     142      30       1
+true_1      45     169      13
+true_2       0      34      66
+
+Classification Report:
+              precision    recall  f1-score   support
+
+           0     0.7594    0.8208    0.7889       173
+           1     0.7253    0.7445    0.7348       227
+           2     0.8250    0.6600    0.7333       100
+
+    accuracy                         0.7540       500
+   macro avg     0.7699    0.7418    0.7523       500
+weighted avg     0.7570    0.7540    0.7532       500
