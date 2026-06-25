@@ -151,7 +151,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: training-outputs
-          path: outputs
+          path: .
 
       - name: SSH deploy to VM
         uses: appleboy/ssh-action@v1.0.3
