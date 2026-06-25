@@ -131,7 +131,8 @@ jobs:
           from botocore.exceptions import ClientError
 
           bucket = os.environ["CLOUD_BUCKET"]
-          with open("outputs/metrics.json") as f:
+          metrics_path = "outputs/metrics.json" if os.path.exists("outputs/metrics.json") else "metrics.json"
+          with open(metrics_path) as f:
               new_acc = float(json.load(f)["accuracy"])
           key = "models/latest/metrics.json"
           s3 = boto3.client("s3")
@@ -174,7 +175,8 @@ jobs:
 
           bucket = os.environ["CLOUD_BUCKET"]
           s3 = boto3.client("s3")
-          s3.upload_file("outputs/metrics.json", bucket, "models/latest/metrics.json")
+          metrics_path = "outputs/metrics.json" if os.path.exists("outputs/metrics.json") else "metrics.json"
+          s3.upload_file(metrics_path, bucket, "models/latest/metrics.json")
           print(f"Uploaded metrics to s3://{bucket}/models/latest/metrics.json")
           EOF
         env:

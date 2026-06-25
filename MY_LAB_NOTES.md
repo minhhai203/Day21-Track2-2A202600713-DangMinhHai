@@ -394,6 +394,24 @@ aws s3 rm s3://mlops-lab-949678235460-hai/models/latest/metrics.json
 
 ---
 
+**Run `28150096144` — vẫn fail dù đã xóa baseline S3:**
+
+- Train artifact từ run này chứa `metrics.json` (không nằm trong thư mục `outputs/`)
+- `download-artifact` giải nén ra root (`./metrics.json`, `./report.txt`)
+- Rollback step đang đọc cứng `outputs/metrics.json` → `FileNotFoundError` → fail
+
+**Sửa lần 4 — hỗ trợ 2 đường dẫn artifact:**
+
+```python
+metrics_path = "outputs/metrics.json" if os.path.exists("outputs/metrics.json") else "metrics.json"
+with open(metrics_path) as f:
+    new_acc = float(json.load(f)["accuracy"])
+```
+
+Áp dụng cùng fallback cho bước upload metrics lên S3 sau deploy.
+
+---
+
 ## Checklist nộp bài
 
 > File nộp chính thức: [`SUBMISSION.md`](SUBMISSION.md) | Thư mục ảnh: [`screenshots/`](screenshots/)

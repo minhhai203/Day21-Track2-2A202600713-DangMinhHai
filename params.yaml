@@ -4,4 +4,4 @@ n_estimators: 300
 max_depth: null
 min_samples_split: 2
 max_iter: 500
-# retrigger pipeline — lan deploy dau sau khi xoa S3 baseline
+# retrigger pipeline — fix artifact metrics path root/outputs
